@@ -1,7 +1,10 @@
 const { users } = require("../models");
 const bcrypt = require("bcrypt");
-const jwt = require("../../../helper/jwt");
+const jwt = require("../helper/jwt");
 
+const multer = require('multer')
+const path = require('path')
+import multer from 'multer'
 
 module.exports = class {
     static async getUsers(req, res) {
@@ -45,7 +48,7 @@ module.exports = class {
     }
 
     static async Register(req, res, next){
-        const { username, fullname, password, email, institusi_name, confPass } = req.body;
+        const { username, fullname,img_profile, role, occupation_id, password, email, institusi_name, confPass, enable } = req.body;
 
         if(password !== confPass)
             return res.status(400).send({
@@ -58,9 +61,14 @@ module.exports = class {
             const respone = await users.create({
                 username: username,
                 fullname: fullname,
-                password: password,
+                img_profile: img_profile,
+                role: role,
+                occupation_id: occupation_id,
+                password: hashPassword,
                 email: email,
                 institusi_name: institusi_name,
+                enable: true
+               
 
             });
             res.status(201).send({
@@ -68,6 +76,11 @@ module.exports = class {
                 message: "Sign Up Berhasil",
                 data: respone,
             });
+
+            // res.send({
+            //     salt,
+            //     hashPassword
+            // })
 
         } catch(error) {
             res.status(500).send(error);
@@ -101,21 +114,22 @@ module.exports = class {
                 });
             }
 
-            const token = jwt.generateToken({
-                username: user.username,
-                password: user.password,
-            });
+            // const token = jwt.generateToken({
+            //     username: user.username,
+            //     password: user.password,
+            // });
 
-            const UserSecure = user.UserValues;
-            delete UserSecure.password;
-            res.header("token", token);
+            // const UserSecure = user.UserValues;
+            // delete UserSecure.password;
+            // res.header("token", token);
             res.status(200).send({
                 status: 200,
                 message:"Login Berhasil",
-                data: {
-                    UserSecure,
-                    token: token,
-                },
+                data: user
+                // data: {
+                //     UserSecure,
+                //     token: token,
+                // },
             });
 
         }catch(error){
@@ -125,6 +139,7 @@ module.exports = class {
 
 
     static async UpdateUser(req, res){
+        const storage = multer.diskStorage
         const checkUsers = await users.findOne({ where: {id: req.params.id} });
 
         if(!checkUsers){
@@ -135,22 +150,23 @@ module.exports = class {
 
         }else {
                 try{
-                    const result = await users.Update(
+                    const result = await users.update(
                         {
                             username: req.body.username,
                             fullname: req.body.fullname,
-                            institusi_name: req.body.institusi_name,
+                            img_profile: req.body.img_profile,
+                            occupation_id: req.body.occupation_id,
+                            institusi_name: req.body.institusi_name
 
                         },
-                        {where: {id: req.userlogin.id}}
+                        {where: {id: req.params.id}}
                     );
 
                     res
                         .status(201)
                         .json({
                             status: 201,
-                            message: "Data berhasil diubah",
-                            data: this.UpdateUser,
+                            message: "Data berhasil diubah"
                         })
                         .end();
 
@@ -159,6 +175,74 @@ module.exports = class {
                     res.send(err);
                 }
         }
+    }
+
+
+    static async ChangePassword(req, res){
+        const checkUsers = await users.findOne({ where: {id: req.params.id} });
+        const {oldPass, confPass} = req.body;
+
+
+        if(!checkUsers){
+            res.status(400).send({
+                status: 400,
+                message: "User Not Found",
+            });
+
+        }else { 
+
+                try{
+                    const result = await users.update(
+                        {
+                            // oldPass: oldPass,
+                            password: req.body.password,
+                            // confPass: confPass
+
+                        },
+                        {where: {id: req.params.id}}
+
+                    );
+
+                    res
+                        .status(201)
+                        .json({
+                            status: 201,
+                            message: "Password berhasil diubah"
+                        })
+                        .end();
+
+                }catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        }
+    }
+
+
+        static async DelUser(req, res) { 
+        const checkUsers = await users.findOne({ where: {id: req.params.id} });
+
+        if(!checkUsers){
+            res.status(400).send({
+                status: 400,
+                message: "User Not Found",
+            });
+
+        }else {
+            try {
+                await users.destroy({
+                    where: {
+                        id: req.params.id
+                    }
+                });
+                res.json({
+                    "message": "Data Deleted"
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
     }
 
 };
