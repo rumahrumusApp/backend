@@ -3,8 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("../helper/jwt");
 
 const multer = require('multer')
-const path = require('path')
-import multer from 'multer'
+// const path = require('path')
+// import multer from 'multer'
 
 module.exports = class {
     static async getUsers(req, res) {
