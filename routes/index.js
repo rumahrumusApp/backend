@@ -12,7 +12,6 @@ const rm = require('../controller/rumusController')
 const api = require('../controller/moreController')
 
 
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
