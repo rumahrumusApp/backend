@@ -1,0 +1,23 @@
+{
+    "development": {
+      "username": "admin",
+      "password": "123456",
+      "database": "db_rumahrumusapp",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    },
+    "test": {
+      "username": "admin",
+      "password": "123456",
+      "database": "db_rumahrumusapp_test",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    },
+    "production": {
+      "username": "admin",
+      "password": "111111",
+      "database": "db_rumahrumusapp_production",
+      "host": "127.0.0.1",
+      "dialect": "postgres"
+    }
+  }

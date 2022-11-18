@@ -1,10 +1,4 @@
-const { category } = require("../models")
-const { occupation } = require("../models")
-const { sub_category } = require("../models")
-const { role } = require("../models")
-const { status } = require("../models")
-const { collection } = require("../models")
-
+const { category, occupation, sub_category, role, status, collection } = require("../models")
 
 module.exports = class {
 
@@ -15,6 +9,7 @@ module.exports = class {
             const result = await category.findAll();
             res.status(200).json({
                 status:200,
+                message: "All Categories",
                 data:result,
             });
             
@@ -39,6 +34,7 @@ module.exports = class {
                     const result = await category.findAll({where: {id: req.params.id} });
                     res.status(200).json({
                         status:200,
+                        message: "Category",
                         data:result,
                     });
                     
@@ -67,6 +63,45 @@ module.exports = class {
             res.status(500).send(error);
         }
     }    
+
+
+    static async EditCategory(req, res){
+        const checkCategory = await category.findOne({ where: {id: req.params.id} });
+
+        if(!checkCategory){
+            res.status(400).send({
+                status: 400,
+                message: "Category Not Found",
+            });
+
+        }else {
+            
+
+                try{
+                    const result = await category.update(
+                        {
+                            name: req.body.name,
+                            order: req.body.order
+
+                        },
+                        {where: {id: req.params.id}}
+                    );
+
+                    res
+                        .status(201)
+                        .json({
+                            status: 201,
+                            message: "Category berhasil diubah"
+                        })
+                        .end();
+
+                }catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        }
+
+    }
 
     static async DelCategory(req, res){
         const checkCategory = await category.findOne({where: {id: req.params.id} });
@@ -101,6 +136,7 @@ module.exports = class {
             const result = await sub_category.findAll();
             res.status(200).json({
                 status:200,
+                message:"All Sub Categories",
                 data:result,
             });
             
@@ -125,6 +161,7 @@ module.exports = class {
                     const result = await sub_category.findAll({where: {id: req.params.id} });
                     res.status(200).json({
                         status:200,
+                        message:"Sub Category",
                         data:result,
                     });
                     
@@ -136,9 +173,10 @@ module.exports = class {
 }
 
     static async createSubCateg(req, res){
-        const { name, order } = req.body;
+        const { category_id, name, order } = req.body;
         try {
                 const respone = await sub_category.create({
+                    category_id: category_id,
                     name: name,
                     order: order,
                 });
@@ -187,6 +225,7 @@ module.exports = class {
             const result = await role.findAll();
             res.status(200).json({
                 status:200,
+                message:"All Role",
                 data:result,
             });
             
@@ -211,6 +250,7 @@ module.exports = class {
                     const result = await role.findAll({where: {id: req.params.id} });
                     res.status(200).json({
                         status:200,
+                        message:"Role",
                         data:result,
                     });
                     

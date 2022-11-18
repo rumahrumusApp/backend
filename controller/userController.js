@@ -21,6 +21,44 @@ module.exports = class {
         }
     }
 
+    static async getUserProfile(req, res) {
+        const checkUsers = await users.findOne({where: { id: req.params.id} });
+
+        if (!checkUsers){
+            res.status(400).send({
+                status:400,
+                message: "User tidak ditemukan!",
+
+            });
+        } else {
+            try {
+                
+                const result= {
+
+                    "id": checkUsers.id,
+                    "img_profile": checkUsers.img_profile,
+                    "email": checkUsers.email,
+                    "fullname": checkUsers.fullname,
+                    "username": checkUsers.username,
+                    "Role": checkUsers.role,
+                    "Occupation": checkUsers.occupation_id,
+                    "affiliaton": checkUsers.institusi_name
+
+                }
+
+                res.status(200).json({
+                    status: 200,
+                    data:result,
+                });
+
+            } catch(err){
+                console.log(err);
+                res.send(err);
+            }
+        }
+    }
+
+
     static async getUserById(req, res) {
         const checkUsers = await users.findOne({where: { id: req.params.id} });
 
@@ -154,6 +192,7 @@ module.exports = class {
                         {
                             username: req.body.username,
                             fullname: req.body.fullname,
+                            // role: req.body.role,
                             img_profile: req.body.img_profile,
                             occupation_id: req.body.occupation_id,
                             institusi_name: req.body.institusi_name
@@ -180,8 +219,7 @@ module.exports = class {
 
     static async ChangePassword(req, res){
         const checkUsers = await users.findOne({ where: {id: req.params.id} });
-        const {oldPass, confPass} = req.body;
-
+        // const {oldPass, confPass} = req.body;
 
         if(!checkUsers){
             res.status(400).send({
@@ -192,30 +230,40 @@ module.exports = class {
         }else { 
 
                 try{
-                    const result = await users.update(
-                        {
-                            // oldPass: oldPass,
-                            password: req.body.password,
-                            // confPass: confPass
 
-                        },
-                        {where: {id: req.params.id}}
+                    const isValidOldPass = await bcrypt.compare(
+                        req.body.oldPass,
+                        checkUsers.password
+                    )
 
-                    );
 
-                    res
-                        .status(201)
-                        .json({
-                            status: 201,
-                            message: "Password berhasil diubah"
-                        })
-                        .end();
+                        if (!isValidOldPass || req.body.newPass !== req.body.confPass) {
+                            res.status(400).send({
+                                status: 400,
+                                message:"Change password failed!"
+                            })
+                        } else {
 
-                }catch (err){
+                            const salt = await bcrypt.genSalt()
+                            const hashPassword = await bcrypt.hash(req.body.newPass, salt)
+
+                            const respone = await users.update({
+                                password: hashPassword
+                            }, {where: {id: req.params.id} })
+
+                            res.status(201).send({
+                                message: "Password has ben changed!"
+                            })
+
+                        }
+                
+
+                }   catch (err){
                     console.log(err);
                     res.send(err);
                 }
-        }
+
+            }
     }
 
 

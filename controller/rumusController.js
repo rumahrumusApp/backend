@@ -76,4 +76,20 @@ module.exports = class {
         
     }
 
+
+    static async EditRumus(res, req){
+
+    }
+
+
+    static async getRumusByKeyword(res, req){
+
+    }
+
+    static async getDelRumus(res, req){
+
+    }
+
+
+
 }
