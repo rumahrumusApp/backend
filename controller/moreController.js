@@ -172,6 +172,34 @@ module.exports = class {
     }
 }
 
+
+
+static async getSubCategByCategId(req, res){
+    const checkSub = await sub_category.findAll({where: {category_id: req.params.id} });
+
+    if (!checkSub){
+        res.status(400).send({
+            status:400,
+            message: "Sub Category NotFound",
+        });
+
+    } else {
+            try {
+
+                // const result = await sub_category.findAll({where: {category_id: req.params.category_id} });
+                res.status(200).json({
+                    status:200,
+                    message:"Sub Category",
+                    data:checkSub,
+                });
+                
+            }  catch (err) {
+                console.log(err);
+                res.send(err);
+     }
+}
+}
+
     static async createSubCateg(req, res){
         const { category_id, name, order } = req.body;
         try {

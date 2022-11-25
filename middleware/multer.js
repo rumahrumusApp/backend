@@ -11,4 +11,8 @@ module.exports = multer({
     }
         cb(null, true); 
     },
+
+    
 });
+
+// const upload = multer({ storages });npm install

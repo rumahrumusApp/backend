@@ -1,8 +1,12 @@
 const { users } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("../helper/jwt");
+const cloudinary = require("../utils/cloudinary");
+const { promisify } = require("util");
+const cloudyUpload = promisify(cloudinary.uploader.upload);
+const cloudyDelete = promisify(cloudinary.uploader.destroy);
 
-const multer = require('multer')
+// const multer = require('multer')
 // const path = require('path')
 // import multer from 'multer'
 
@@ -104,7 +108,7 @@ module.exports = class {
                 occupation_id: occupation_id,
                 password: hashPassword,
                 email: email,
-                institusi_name: institusi_name,
+                // institusi_name: institusi_name,
                 enable: true
                
 
@@ -177,7 +181,8 @@ module.exports = class {
 
 
     static async UpdateUser(req, res){
-        const storage = multer.diskStorage
+        // const storage = multer.diskStorage
+        const { username, fullname, img_profile, occupation_id, institusi_name } = req.body;
         const checkUsers = await users.findOne({ where: {id: req.params.id} });
 
         if(!checkUsers){
@@ -188,14 +193,37 @@ module.exports = class {
 
         }else {
                 try{
+
+
+                    let oldimages = checkUsers.img_profile
+
+                    // const del = req.params.id;
+
+                    // const PicDel = await users.findOne( {where: {id: del}})
+
+                    // let cloudImg;
+
+                    // if (PicDel.length > 0){
+                    //     for (var i = 0; i < PicDel.length; i++){
+                    //         cloudImg = PicDel[i].img_profile?.substring(62, 82);
+                    //         cloudyDelete[cloudImg]; 
+                    // }
+
+                    // if (PicDel.length > 0){
+                        // for (var i = 0; i < PicDel.length; i++){
+                            oldimages = oldimages?.substring(62, 82);
+                            cloudyDelete(oldimages); 
+                    // }
+
+                    const uploadImg = await cloudyUpload(req.file.path);
                     const result = await users.update(
                         {
-                            username: req.body.username,
-                            fullname: req.body.fullname,
+                            username: username,
+                            fullname: fullname,
                             // role: req.body.role,
-                            img_profile: req.body.img_profile,
-                            occupation_id: req.body.occupation_id,
-                            institusi_name: req.body.institusi_name
+                            img_profile: uploadImg.secure_url,
+                            occupation_id: occupation_id,
+                            institusi_name: institusi_name
 
                         },
                         {where: {id: req.params.id}}

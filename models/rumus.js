@@ -11,20 +11,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      
     }
   }
   rumus.init({
     title: DataTypes.STRING,
-    kategori: DataTypes.STRING,
-    subkategori: DataTypes.STRING,
+    category_id: DataTypes.INTEGER,
+    sub_category_id: DataTypes.INTEGER,
     img_ilustrasi: DataTypes.STRING,
     img_rumus: DataTypes.STRING,
     img_contoh: DataTypes.STRING,
-    reviewer_id: DataTypes.STRING,
-    contributor_id: DataTypes.STRING,
+    reviewer_id: DataTypes.INTEGER,
+    contributor_id: DataTypes.INTEGER,
     catatan: DataTypes.STRING,
     komentar: DataTypes.STRING,
-    status_id: DataTypes.STRING
+    status_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'rumus',

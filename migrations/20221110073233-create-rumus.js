@@ -12,11 +12,11 @@ module.exports = {
       title: {
         type: Sequelize.STRING
       },
-      kategori: {
-        type: Sequelize.STRING
+      category_id: {
+        type: Sequelize.INTEGER
       },
-      subkategori: {
-        type: Sequelize.STRING
+      sub_category_id: {
+        type: Sequelize.INTEGER
       },
       img_ilustrasi: {
         type: Sequelize.STRING
@@ -28,10 +28,10 @@ module.exports = {
         type: Sequelize.STRING
       },
       reviewer_id: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       contributor_id: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       catatan: {
         type: Sequelize.STRING
@@ -40,7 +40,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       status_id: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

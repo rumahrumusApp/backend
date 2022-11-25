@@ -20,9 +20,9 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     img_profile: DataTypes.STRING,
     role: DataTypes.STRING,
-    occupation_id: DataTypes.STRING,
+    occupation_id: DataTypes.INTEGER,
     institusi_name: DataTypes.STRING,
-    reviewer_id: DataTypes.STRING,
+    reviewer_id: DataTypes.INTEGER,
     enable: DataTypes.BOOLEAN
   }, {
     sequelize,
