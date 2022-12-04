@@ -11,6 +11,26 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      rumus.belongsTo(models.users, {
+        foreignKey: "contributor_id",
+        as: 'contributor' 
+      });
+
+      rumus.belongsTo(models.status, {
+        foreignKey: "status_id",
+        as: 'status' 
+      });
+
+      rumus.belongsTo(models.category, {
+        foreignKey: "category_id",
+        as: 'category' 
+      });
+
+      rumus.belongsTo(models.sub_category, {
+        foreignKey: "sub_category_id",
+        as: 'subcategory' 
+      });
+
       
     }
   }

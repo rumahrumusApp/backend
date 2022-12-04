@@ -8,6 +8,12 @@ const uploadOnMemory = require("../utils/memoryUpload");
 const app = require("express");
 const appRouter = express.Router();
 const apiRouter = express.Router();
+const fileUpload = require('express-fileupload')
+// var connect = require('connect');
+// var app = connect();
+// app.use(express.json())
+// app.use(express.urlencoded({ extended: true }))
+// app.use(fileUpload())
 
 // var bodyParser = require('body-parser');
 // app.use(bodyParser.json({limit: "5000mb"}));
@@ -55,18 +61,17 @@ router.get('/user/getAll', user.getUsers)
 router.get('/user/:id', user.getUserById)
 router.get('/user/profile/:id', user.getUserProfile) //blm add postman
 
-router.post('/user/editUser/:id', 
-  multer.single("img_profile"),
-  user.UpdateUser);
+router.post('/user/editUser/:id', multer.single("img_profile"),user.UpdateUser);
 
 router.post('/user/changePass/:id', user.ChangePassword)
 router.delete('/user/delUser/:id', user.DelUser)
 
 //rumus
 router.get('/rumus/all', rm.getRumus)
-router.get('/rumus/categ/:kategori', rm.getRumusByCateg)
-router.get('/rumus/subcateg/:subkategori', rm.getRumusBySub)
-router.get('/rumus/search/keyword', rm.getRumusByKeyword)
+router.get('/rumus/categ/:category_id', rm.getRumusByCateg)
+router.get('/rumus/subcateg/:id', rm.getRumusBySub)
+router.get('/rumus/getOne/:id',  rm.getRumusById)
+router.get('/rumus/keyword', rm.getRumusByKeyword)
 
 
 router.post('/rumus/editRumus/:id', uploadOnMemory.any(["img_ilustrasi", "img_rumus", "img_contoh"]) ,rm.EditRumus)
@@ -115,6 +120,11 @@ router.delete('/collect/delCollect/:id', api.DelCollect)
 
 
 //reviewer
+router.get('/getrumus/contributor/:id', rm.getRumusbyReviewer)
+router.post('/rumus/review/:id', rm.ReviewRumus)
+
+
+
 //contributor
 //admin
 //pengelola

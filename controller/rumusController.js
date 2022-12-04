@@ -1,4 +1,4 @@
-const { rumus } = require("../models");
+const { rumus, sequelize } = require("../models");
 // const path = require("fs");
 const { Op } = require("sequelize");
 const fs = require("fs");
@@ -14,7 +14,14 @@ const cloudyDelete = promisify(cloudinary.uploader.destroy);
 module.exports = class {
     static async getRumus(req, res){
         try{
-            const result = await rumus.findAll();
+            const result = await rumus.findAll({ 
+                include: [
+                
+                'contributor',
+                'status',
+                
+
+           ],});
             res.status(200).json({
                 status:200,
                 data: result,
@@ -27,7 +34,7 @@ module.exports = class {
     }
 
     static async getRumusByCateg(req, res){
-        const checkRumus = await rumus.findOne({where: {kategori: req.params.kategori}})
+        const checkRumus = await rumus.findOne({where: {category_id: req.params.category_id}})
 
         if (!checkRumus){
             res.status(400).send({
@@ -39,7 +46,7 @@ module.exports = class {
         } else {
             try {
                 const result = await rumus.findAll({
-                    where: {kategori: req.params.kategori},
+                    where: {category_id: req.params.category_id},
                 });
                 res.status(200).json({
                     status: 200,
@@ -55,7 +62,7 @@ module.exports = class {
     }
 
     static async getRumusBySub(req, res){
-        const checkRumus = await rumus.findAll({where: {sub_category_id: req.params.subkategori}})
+        const checkRumus = await rumus.findAll({where: {sub_category_id: req.params.id}})
 
         if (!checkRumus){
             res.status(400).send({
@@ -82,6 +89,115 @@ module.exports = class {
 
     }
 
+
+    static async getRumusById(req, res){
+        const checkRumus = await rumus.findOne({where: {id: req.params.id}})
+
+        if (!checkRumus){
+            res.status(400).send({
+                status:400,
+                message: "Rumus tidak ditemukan!",
+
+            });
+            
+        } else {
+            try {
+                const result = await rumus.findOne({
+                    include: [
+                
+                        'category',
+                        'subcategory',
+                        
+        
+                   ], where: {id: req.params.id},
+                });
+                res.status(200).json({
+                    status: 200,
+                    data: result,
+                });2
+
+            } catch(err){
+                console.log(err);
+                res.send(err);
+            }
+        }
+
+    }
+
+
+
+    static async getRumusbyReviewer(req, res){
+        const checkRumus = await rumus.findOne({where: {contributor_id: req.params.id}})
+
+        if (!checkRumus){
+            res.status(400).send({
+                status:400,
+                message: "Rumus tidak ditemukan!",
+
+            });
+            
+        } else {
+            try {
+                const result = await rumus.findAll({
+                    include: [
+                       
+                        'contributor'
+                     
+     
+                   ],
+                    where: {contributor_id: req.params.id},
+                });
+                res.status(200).json({
+                    status: 200,
+                    data:result,
+                });
+
+            } catch(err){
+                console.log(err);
+                res.send(err);
+            }
+        }
+
+    }
+
+
+    static async getRumusByKeyword(req, res) {
+        try {
+            console.log(req.query.key)
+            let lookupValue = req.query.key.toLowerCase()
+            console.log('key: ', lookupValue)
+            const result = await rumus.findAll({
+        
+                where: {
+                    title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + lookupValue + '%')
+                }
+            })
+
+            if (result.length == 0) {
+                res.status(404).send({
+                    status: 400,
+                    message: 'Data not exist!'
+                })
+            }
+
+            else {
+                res.status(200).json({
+                    status: 200,
+                    message: `All rumus match with keyword`,
+                    data: result
+                })
+            }
+        }
+
+        catch(err) {
+            console.log(err)
+            res.send(err)
+        }
+    }
+
+
+
+
     static async AddRumus(req, res){
        
           const {title, category_id, sub_category_id,img_ilustrasi, img_rumus, img_contoh, reviewer_id,contributor_id, catatan, komentar,status_id } = req.body;
@@ -92,30 +208,40 @@ module.exports = class {
             let fileBase64 =[];
             const file = [];
 
+               for (var i = 0; i< req.files.length; i++) {
+                fileBase64.push(req.files[i].buffer.toString("base64"));
+                file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                const result = await cloudyUpload(file[i]);
+                imgUpload.push(result.secure_url);
+               }
+
             const rumusCreated = await rumus.create({
-                title: title,
-                category_id: category_id,
-                sub_category_id: sub_category_id,
-                reviewer_id: reviewer_id,
-                contributor_id: contributor_id,
-                catatan: catatan,
-                komentar: komentar,
-                status_id : status_id,
-            });
-
-                for (var i = 0; i<= 2; i++) {
-                    fileBase64.push(req.files[i].buffer.toString("base64"));
-                    file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
-                    const result = await cloudyUpload(file[i]);
-                    imgUpload.push(result.secure_url);
-
-                }
-
-                const uploadimg = await rumus.update({
+                    title: title,
+                    category_id: category_id,
+                    sub_category_id: sub_category_id,
                     img_ilustrasi: imgUpload[0],
                     img_rumus: imgUpload[1],
-                    img_contoh: imgUpload[2]}, {where: {id: rumusCreated.id}
-                });
+                    img_contoh: imgUpload[2],
+                    reviewer_id: reviewer_id,
+                    contributor_id: contributor_id,
+                    catatan: catatan,
+                    komentar: komentar,
+                    status_id : status_id,
+            });
+
+                // for (var i = 0; i< req.files.length; i++) {
+                //     fileBase64.push(req.files[i].buffer.toString("base64"));
+                //     file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                //     const result = await cloudyUpload(file[i]);
+                //     imgUpload.push(result.secure_url);
+
+                // }
+
+                // const uploadimg = await rumus.update({
+                //     img_ilustrasi: imgUpload[0],
+                //     img_rumus: imgUpload[1],
+                //     img_contoh: imgUpload[2]}, {where: {id: rumusCreated.id}
+                // });
            
                 //  const rumusCreated = await rumus.create({
                 //     title: title,
@@ -136,14 +262,13 @@ module.exports = class {
                 //     fileBase64.push(req.files[i].buffer.toString("base64"));
                 //     file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
                 //     const result = await cloudyUpload(file[i]);
-                //     img_ilust.push(result.secure_url);
-                //     img_rum.push(result.secure_url);
-                //     img_cont.push(result.secure_url);
+                //     imgUpload.push(result.secure_url);
+                 
                     
                 //     await rumus.update({
-                //       img_ilustrasi: img_ilust[0],
-                //       img_rumus : img_rum[1],
-                //       img_contoh: img_cont[2],
+                //       img_ilustrasi: imgUpload[0],
+                //       img_rumus : imgUpload[1],
+                //       img_contoh: imgUpload[2],
                 //     }, {where: {id: rumusCreated.id}} );
 
                 //  }
@@ -166,7 +291,7 @@ module.exports = class {
 
     static async EditRumus(req, res){
 
-        const {title, kategori, subkategori, reviewer_id,img_ilustrasi, img_rumus, img_contoh,contributor_id, catatan, komentar,status_id } = req.body;
+        const {title, category_id, sub_category_id, reviewer_id,img_ilustrasi, img_rumus, img_contoh,contributor_id, catatan, komentar,status_id } = req.body;
         // const {title, kategori, subkategori, reviewer_id,contributor_id, catatan, komentar,status_id } = req.body;
         const checkData = await rumus.findOne({ where: {id: req.params.id} });
 
@@ -180,11 +305,36 @@ module.exports = class {
 
             try{
 
-                let img_ilust = [];
-                let img_rum = [];
-                let img_cont = [];
+                let imgUpload = [];
                 let fileBase64 =[];
                 const file = [];
+    
+                   for (var i = 0; i< req.files.length; i++) {
+                    fileBase64.push(req.files[i].buffer.toString("base64"));
+                    file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                    const result = await cloudyUpload(file[i]);
+                    imgUpload.push(result.secure_url);
+                   }
+    
+                    const rumusUpdate = await rumus.update({
+                        title: title,
+                        category_id: category_id,
+                        sub_category_id: sub_category_id,
+                        img_ilustrasi: imgUpload[0],
+                        img_rumus: imgUpload[1],
+                        img_contoh: imgUpload[2],
+                        reviewer_id: reviewer_id,
+                        contributor_id: contributor_id,
+                        catatan: catatan,
+                        komentar: komentar,
+                        status_id : status_id,
+                }, { where: { id: req.params.id }});
+
+                // let img_ilust = [];
+                // let img_rum = [];
+                // let img_cont = [];
+                // let fileBase64 =[];
+                // const file = [];
 
                 // const del = req.params.id;
 
@@ -192,36 +342,36 @@ module.exports = class {
 
 
 
-                let cloudIlust = [checkData.img_ilustrasi, checkData.img_rumus, checkData.img_contoh];
+                // let cloudIlust = [checkData.img_ilustrasi, checkData.img_rumus, checkData.img_contoh];
 
-                cloudIlust[0] = cloudIlust[0]?.substring(62, 82);
-                cloudIlust[1] = cloudIlust[1]?.substring(62, 82);
-                cloudIlust[2] = cloudIlust[2]?.substring(62, 82);
+                // cloudIlust[0] = cloudIlust[0]?.substring(62, 82);
+                // cloudIlust[1] = cloudIlust[1]?.substring(62, 82);
+                // cloudIlust[2] = cloudIlust[2]?.substring(62, 82);
                 
-                for (let i = 0; i <= 2; i++) {
-                    cloudyDelete(cloudIlust[i])
-                }
+                // for (let i = 0; i <= 2; i++) {
+                //     cloudyDelete(cloudIlust[i])
+                // }
                         
 
 
 
-                            const rumusEdit = await rumus.update({
-                                title: title,
-                                kategori: kategori,
-                                subkategori: subkategori,
-                                reviewer_id: reviewer_id,
-                                img_ilustrasi: img_ilustrasi,
-                                img_rumus: img_rumus,
-                                img_contoh: img_contoh,
-                                contributor_id: contributor_id,
-                                catatan: catatan,
-                                komentar: komentar,
-                                status_id : status_id 
-                            },
-                                 { where: { 
-                                    id: req.params.id
-                             }}
-                        ); 
+                        //     const rumusEdit = await rumus.update({
+                        //         title: title,
+                        //         kategori: kategori,
+                        //         subkategori: subkategori,
+                        //         reviewer_id: reviewer_id,
+                        //         img_ilustrasi: img_ilustrasi,
+                        //         img_rumus: img_rumus,
+                        //         img_contoh: img_contoh,
+                        //         contributor_id: contributor_id,
+                        //         catatan: catatan,
+                        //         komentar: komentar,
+                        //         status_id : status_id 
+                        //     },
+                        //          { where: { 
+                        //             id: req.params.id
+                        //      }}
+                        // ); 
                         
                              
                         
@@ -229,29 +379,29 @@ module.exports = class {
 
 
 
-                            for (var i = 0; i<=2; i++) {
-                                fileBase64.push(req.files[i].buffer.toString("base64"));
-                                file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
-                                const result = await cloudyUpload(file[i]);
-                                img_ilust.push(result.secure_url);
-                                img_rum.push(result.secure_url);
-                                img_cont.push(result.secure_url);
+                            // for (var i = 0; i<=2; i++) {
+                            //     fileBase64.push(req.files[i].buffer.toString("base64"));
+                            //     file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                            //     const result = await cloudyUpload(file[i]);
+                            //     img_ilust.push(result.secure_url);
+                            //     img_rum.push(result.secure_url);
+                            //     img_cont.push(result.secure_url);
 
-                                await rumus.create({
-                                    img_ilustrasi: img_ilust[0],
-                                    img_rumus : img_rum[1],
-                                    img_contoh: img_cont[2],
-                                    }, { where: { id: checkData.id }});
+                            //     await rumus.create({
+                            //         img_ilustrasi: img_ilust[0],
+                            //         img_rumus : img_rum[1],
+                            //         img_contoh: img_cont[2],
+                            //         }, { where: { id: checkData.id }});
                                
-                            } 
+                            // } 
 
                         
                             
-                            const respone = await rumus.findByPk(rumusEdit.id)
+                            // const respone = await rumus.findByPk(rumusEdit.id)
 
                             res.status(201).json({
                               message: "Rumus Updated!",
-                             data: respone
+                             data: rumusUpdate
                             });
 
 
@@ -266,7 +416,45 @@ module.exports = class {
     }
 
 
-    static async getRumusByKeyword(res, req){
+    static async ReviewRumus(req, res){
+
+        // const {reviewer_id,komentar,status_id } = req.body;
+        // const {title, kategori, subkategori, reviewer_id,contributor_id, catatan, komentar,status_id } = req.body;
+        const checkData = await rumus.findOne({ where: {id: req.params.id} });
+
+        if(!checkData){
+            res.status(400).send({
+                status: 400,
+                message: "Rumus NotFound",
+            });
+
+        } else {
+            
+
+            try{
+
+    
+                    const rumusUpdate = await rumus.update({
+                        reviewer_id: req.body.reviewer_id,
+                        komentar: req.body.komentar,
+                        status_id : req.body.status_id,
+
+                }, {where: { id: req.params.id }});
+
+
+                            res.status(201).json({
+                              message: "Review Succes!",
+                             data: checkData
+                            });
+
+
+                    } catch(err){
+                        console.log(err);
+                        res.send(err);
+                    }
+
+         }
+    
 
     }
 

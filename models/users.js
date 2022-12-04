@@ -11,7 +11,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-    }
+      users.belongsTo(models.occupation, {
+        foreignKey: "occupation_id",
+        // as: 'occupation' 
+      });
+
+    users.belongsTo(models.role, {
+      foreignKey: "role",
+      as: 'roles' 
+    });
+
+    
+  }
+
+
   }
   users.init({
     username: DataTypes.STRING,
@@ -19,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     email: DataTypes.STRING,
     img_profile: DataTypes.STRING,
-    role: DataTypes.STRING,
+    role: DataTypes.INTEGER,
     occupation_id: DataTypes.INTEGER,
     institusi_name: DataTypes.STRING,
     reviewer_id: DataTypes.INTEGER,

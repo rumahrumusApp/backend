@@ -25,16 +25,16 @@ module.exports = {
         type: Sequelize.STRING
       },
       role: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       occupation_id: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       institusi_name: {
         type: Sequelize.STRING
       },
       reviewer_id: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       enable: {
         type: Sequelize.BOOLEAN

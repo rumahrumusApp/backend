@@ -1,4 +1,4 @@
-const { category, occupation, sub_category, role, status, collection } = require("../models")
+const { category, occupation, sub_category, role, status, collection, rumus } = require("../models")
 
 module.exports = class {
 
@@ -175,7 +175,7 @@ module.exports = class {
 
 
 static async getSubCategByCategId(req, res){
-    const checkSub = await sub_category.findAll({where: {category_id: req.params.id} });
+    const checkSub = await sub_category.findAll({where: {category_id: req.params.id}, attributes: ['id', 'name'] });
 
     if (!checkSub){
         res.status(400).send({
@@ -189,8 +189,8 @@ static async getSubCategByCategId(req, res){
                 // const result = await sub_category.findAll({where: {category_id: req.params.category_id} });
                 res.status(200).json({
                     status:200,
-                    message:"Sub Category",
-                    data:checkSub,
+                    message:`Sub categories with category id ${req.params.id}`,
+                    data:checkSub ,
                 });
                 
             }  catch (err) {
@@ -523,7 +523,7 @@ static async DelRole(req, res){
     }
 
     static async getCollectById(req, res){
-        const checkCollect = await collection.findOne({where: {id: req.params.id} });
+        const checkCollect = await collection.findOne({where: {user_id: req.params.id} });
 
         if (!checkCollect){
             res.status(400).send({
@@ -534,7 +534,13 @@ static async DelRole(req, res){
         } else {
                 try {
 
-                    const result = await collection.findAll({where: {id: req.params.id} });
+                    const result = await collection.findAll({
+                        include: [
+                       
+                          'rumus'
+                       
+       
+                     ], },{where: {user_id: req.params.id} });
                     res.status(200).json({
                         status:200,
                         data:result,

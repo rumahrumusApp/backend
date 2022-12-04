@@ -3,7 +3,7 @@ const path = require('path')
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./storages/");
+    cb(null, "/storages");
   },
   filename: (req, file, cb) => {
     const [prefix] = file.mimetype.split("/");

@@ -1,5 +1,6 @@
-const { users } = require("../models");
+const { users, role } = require("../models");
 const bcrypt = require("bcrypt");
+const path = require("path");
 const jwt = require("../helper/jwt");
 const cloudinary = require("../utils/cloudinary");
 const { promisify } = require("util");
@@ -26,6 +27,7 @@ module.exports = class {
     }
 
     static async getUserProfile(req, res) {
+        
         const checkUsers = await users.findOne({where: { id: req.params.id} });
 
         if (!checkUsers){
@@ -37,22 +39,18 @@ module.exports = class {
         } else {
             try {
                 
-                const result= {
-
-                    "id": checkUsers.id,
-                    "img_profile": checkUsers.img_profile,
-                    "email": checkUsers.email,
-                    "fullname": checkUsers.fullname,
-                    "username": checkUsers.username,
-                    "Role": checkUsers.role,
-                    "Occupation": checkUsers.occupation_id,
-                    "affiliaton": checkUsers.institusi_name
-
-                }
+                const result = await users.findOne({
+                    include: [
+                       
+                        'roles',
+                        'occupation',
+                     
+        
+                   ], where: {id: req.params.id},});
 
                 res.status(200).json({
                     status: 200,
-                    data:result,
+                    data: result,
                 });
 
             } catch(err){
@@ -90,25 +88,27 @@ module.exports = class {
     }
 
     static async Register(req, res, next){
-        const { username, fullname,img_profile, role, occupation_id, password, email, institusi_name, confPass, enable } = req.body;
+        const { username, fullname,img_profile, role, occupation_id, password, reviewer_id,email, institusi_name, confPass, enable } = req.body;
 
         if(password !== confPass)
             return res.status(400).send({
                 message: "password tidak sama",
             });
         
-        const salt = await bcrypt.genSalt();
-        const hashPassword = await bcrypt.hash(password, salt);
+        else {
+            const salt = await bcrypt.genSalt();
+            const hashPassword = await bcrypt.hash(password, salt);
         try {
             const respone = await users.create({
                 username: username,
                 fullname: fullname,
-                img_profile: img_profile,
-                role: role,
+                img_profile: null,
+                role: 1,
                 occupation_id: occupation_id,
                 password: hashPassword,
                 email: email,
-                // institusi_name: institusi_name,
+                institusi_name: null,
+                reviewer_id: null,
                 enable: true
                
 
@@ -126,6 +126,7 @@ module.exports = class {
 
         } catch(error) {
             res.status(500).send(error);
+        }
         }
     }
 
@@ -184,6 +185,7 @@ module.exports = class {
         // const storage = multer.diskStorage
         const { username, fullname, img_profile, occupation_id, institusi_name } = req.body;
         const checkUsers = await users.findOne({ where: {id: req.params.id} });
+       
 
         if(!checkUsers){
             res.status(400).send({
@@ -192,55 +194,63 @@ module.exports = class {
             });
 
         }else {
+                
                 try{
 
+                    // console.log(checkUsers)
 
-                    let oldimages = checkUsers.img_profile
+                    //  let oldimages = checkUsers.img_profile
+                    //  let image = req.file.path
+                     const uploadImage = await cloudyUpload(req.file.path);
+                    //  img_profile = uploadImage.secure_url
 
-                    // const del = req.params.id;
+                    //  if (oldimages == null){
+                            
+                           const UpdateUser = await users.update(
+                                {
+                                    username: req.body.username,
+                                    fullname: req.body.fullname,
+                                    role: req.body.role,
+                                    img_profile: uploadImage.secure_url,
+                                    occupation_id: req.body.occupation_id,
+                                    institusi_name: req.body.institusi_name
 
-                    // const PicDel = await users.findOne( {where: {id: del}})
+                                },
+                                {where: {id: req.params.id}}
+                            );
 
-                    // let cloudImg;
+                        
 
-                    // if (PicDel.length > 0){
-                    //     for (var i = 0; i < PicDel.length; i++){
-                    //         cloudImg = PicDel[i].img_profile?.substring(62, 82);
-                    //         cloudyDelete[cloudImg]; 
-                    // }
+                        // } else {
 
-                    // if (PicDel.length > 0){
-                        // for (var i = 0; i < PicDel.length; i++){
-                            oldimages = oldimages?.substring(62, 82);
-                            cloudyDelete(oldimages); 
-                    // }
+                        //     // const uploadImage = await cloudyUpload(req.file.path);
+                        //     await users.update(
+                        //         {
+                        //             username: username,
+                        //             fullname: fullname,
+                        //             // role: req.body.role,
+                        //             img_profile: img_profile,
+                        //             occupation_id: occupation_id,
+                        //             institusi_name: institusi_name
 
-                    const uploadImg = await cloudyUpload(req.file.path);
-                    const result = await users.update(
-                        {
-                            username: username,
-                            fullname: fullname,
-                            // role: req.body.role,
-                            img_profile: uploadImg.secure_url,
-                            occupation_id: occupation_id,
-                            institusi_name: institusi_name
+                        //         },
+                        //         {where: {id: req.params.id}}
+                        //     );
 
-                        },
-                        {where: {id: req.params.id}}
-                    );
+                        // }
 
-                    res
-                        .status(201)
-                        .json({
-                            status: 201,
-                            message: "Data berhasil diubah"
-                        })
-                        .end();
+                    res.status(201).json({
+                        status: 201,
+                        // data: result,
+                        // message: 'Bisa gais',
+                        data: checkUsers
+                    });
 
-                }catch (err){
+                } catch (err){
                     console.log(err);
                     res.send(err);
                 }
+
         }
     }
 
