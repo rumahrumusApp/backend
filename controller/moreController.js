@@ -133,7 +133,11 @@ module.exports = class {
     static async getSubCateg(req, res){
         try {
 
-            const result = await sub_category.findAll();
+            const result = await sub_category.findAll({
+                include: [
+                    'category',
+                ]
+        });
             res.status(200).json({
                 status:200,
                 message:"All Sub Categories",
@@ -175,7 +179,11 @@ module.exports = class {
 
 
 static async getSubCategByCategId(req, res){
-    const checkSub = await sub_category.findAll({where: {category_id: req.params.id}, attributes: ['id', 'name'] });
+    const checkSub = await sub_category.findAll({
+        include: [
+            'category',
+        ]
+    },{where: {category_id: req.params.id}});
 
     if (!checkSub){
         res.status(400).send({
@@ -187,7 +195,7 @@ static async getSubCategByCategId(req, res){
             try {
 
                 // const result = await sub_category.findAll({where: {category_id: req.params.category_id} });
-                res.status(200).json({
+                res.send({
                     status:200,
                     message:`Sub categories with category id ${req.params.id}`,
                     data:checkSub ,
@@ -219,6 +227,48 @@ static async getSubCategByCategId(req, res){
             res.status(500).send(error);
         }
     }    
+
+
+
+    static async EditSubCategory(req, res){
+        const checkCategory = await sub_category.findOne({ where: {id: req.params.id} });
+
+        if(!checkCategory){
+            res.status(400).send({
+                status: 400,
+                message: "Category Not Found",
+            });
+
+        }else {
+            
+
+                try{
+                    const result = await sub_category.update(
+                        {
+                            name: req.body.name,
+                            category_id: req.body.category_id,
+                            order: req.body.order
+
+                        },
+                        {where: {id: req.params.id}}
+                    );
+
+                    res
+                        .status(201)
+                        .json({
+                            status: 201,
+                            message: "Sub Category berhasil diubah"
+                        })
+                        .end();
+
+                }catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        }
+
+    }
+
 
     static async DelSubCateg(req, res){
         const checkSub = await sub_category.findOne({where: {id: req.params.id} });
@@ -309,6 +359,45 @@ static async createRole(req, res){
     }
 }    
 
+
+static async EditRole(req, res){
+    const checkCategory = await role.findOne({ where: {id: req.params.id} });
+
+    if(!checkCategory){
+        res.status(400).send({
+            status: 400,
+            message: "Category Not Found",
+        });
+
+    }else {
+        
+
+            try{
+                const result = await role.update(
+                    {
+                        name: req.body.name,
+                        order: req.body.order
+
+                    },
+                    {where: {id: req.params.id}}
+                );
+
+                res
+                    .status(201)
+                    .json({
+                        status: 201,
+                        message: "Role berhasil diubah"
+                    })
+                    .end();
+
+            }catch (err){
+                console.log(err);
+                res.send(err);
+            }
+    }
+
+}
+
 static async DelRole(req, res){
     const checkCategory = await role.findOne({where: {id: req.params.id} });
 
@@ -393,6 +482,47 @@ static async DelRole(req, res){
             res.status(500).send(error);
         }
     }    
+
+
+    static async EditOccup(req, res){
+        const checkCategory = await occupation.findOne({ where: {id: req.params.id} });
+
+        if(!checkCategory){
+            res.status(400).send({
+                status: 400,
+                message: "Category Not Found",
+            });
+
+        }else {
+            
+
+                try{
+                    const result = await occupation.update(
+                        {
+                            name: req.body.name,
+                            order: req.body.order
+
+                        },
+                        {where: {id: req.params.id}}
+                    );
+
+                    res
+                        .status(201)
+                        .json({
+                            status: 201,
+                            message: "Occupation berhasil diubah"
+                        })
+                        .end();
+
+                }catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        }
+
+    }
+
+
 
     static async DelOccupation(req, res){
         const checkOccup = await occupation.findOne({where: {id: req.params.id} });
@@ -480,6 +610,46 @@ static async DelRole(req, res){
         }
     }    
 
+    static async EditStatus(req, res){
+        const checkCategory = await status.findOne({ where: {id: req.params.id} });
+
+        if(!checkCategory){
+            res.status(400).send({
+                status: 400,
+                message: "Category Not Found",
+            });
+
+        }else {
+            
+
+                try{
+                    const result = await status.update(
+                        {
+                            name: req.body.name,
+                            order: req.body.order
+
+                        },
+                        {where: {id: req.params.id}}
+                    );
+
+                    res
+                        .status(201)
+                        .json({
+                            status: 201,
+                            message: "Status berhasil diubah"
+                        })
+                        .end();
+
+                }catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
+        }
+
+    }
+
+
+
     static async DelStatus(req, res){
         const checkStatus = await status.findOne({where: {id: req.params.id} });
 
@@ -510,7 +680,14 @@ static async DelRole(req, res){
     static async getCollect(req, res){
         try {
 
-            const result = await collection.findAll();
+            const result = await collection.findAll({
+                include: [
+                       
+                    'users'
+                 
+ 
+               ],
+            });
             res.status(200).json({
                 status:200,
                 data:result,

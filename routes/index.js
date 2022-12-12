@@ -1,34 +1,13 @@
 var express = require('express');
-// app.use(express.json);
-const Multer = require("multer");
 const multer = require("../middleware/multer")
 const upload = require("../utils/upload");
 const uploadOnMemory = require("../utils/memoryUpload");
+const auth = require("../middleware/auth");
+var verify = require("../middleware/login");
 
 const app = require("express");
 const appRouter = express.Router();
-const apiRouter = express.Router();
 const fileUpload = require('express-fileupload')
-// var connect = require('connect');
-// var app = connect();
-// app.use(express.json())
-// app.use(express.urlencoded({ extended: true }))
-// app.use(fileUpload())
-
-// var bodyParser = require('body-parser');
-// app.use(bodyParser.json({limit: "5000mb"}));
-// app.use(bodyParser.urlencoded({limit: "5000mb", extended: true, parameterLimit:50000}));
-
-const storages = Multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, './storages')
-    },
-    fileName: (req, file, cb) => {
-      console.log(file)
-      cb(null, Date.now() + path.extrame(file.originalname))
-    }
-})
-
 
 var router = express.Router();
 // const router = require('express-promise-router')();
@@ -44,7 +23,6 @@ const user = require('../controller/userController')
 const rm = require('../controller/rumusController')
 const api = require('../controller/moreController');
 // const { AddRumus } = require('../controller/rumusController');
-const memoryUpload = require('../utils/memoryUpload');
 const path = require('path');
 
 
@@ -90,18 +68,21 @@ router.get('/sct/allSubCateg', api.getSubCateg)
 router.get('/sct/subById/:id', api.getSubCategById)
 router.get('/sct/subByCategId/:id', api.getSubCategByCategId)
 router.post('/sct/addSubCateg', api.createSubCateg)
+router.post('/sct/editSubCateg/:id', api.EditSubCategory)
 router.delete('/sct/delSubCateg/:id', api.DelSubCateg)
 
 //role
 router.get('/role/allRole', api.getRole)
 router.get('/role/roleById/:id', api.getRoleById)
 router.post('/role/createRole', api.createRole)
+router.post('/role/editRole/:id', api.EditRole)
 router.delete('/role/delRole/:id', api.DelRole)
 
 //oocupation
 router.get('/occup/allOccup', api.getOccupation)
 router.get('/occup/occupById/:id', api.getOccupationById)
 router.post('/occup/createOccup', api.createOccupation)
+router.post('/occup/editOccup/:id', api.EditOccup)
 router.delete('/occup/delOccupt/:id', api.DelOccupation)
 
 
@@ -109,6 +90,7 @@ router.delete('/occup/delOccupt/:id', api.DelOccupation)
 router.get('/status/allStatus', api.getStatus)
 router.get('/status/statusById/:id', api.getStatusById)
 router.post('/status/createStatus', api.createStatus)
+router.post('/status/editStatus/:id', api.EditStatus)
 router.delete('/status/delStatus/:id', api.DelStatus)
 
 
@@ -119,14 +101,25 @@ router.post('/collect/addCollect', api.AddCollect)
 router.delete('/collect/delCollect/:id', api.DelCollect)
 
 
-//reviewer
-router.get('/getrumus/contributor/:id', rm.getRumusbyReviewer)
+//reviewer 
 router.post('/rumus/review/:id', rm.ReviewRumus)
+router.get('/rumus/allrumus', rm.getRumusAll)
 
+
+//reviewer&admin
+router.get('/rumus/getdatasubmits', rm.getRumusSubmissions)
+router.get('/rumus/getdatasubmitbyid/:id', rm.getRumusSubmissionsById)
 
 
 //contributor
+router.get('/rumus/myrumus/:id', rm.getRumusByUser)
+
+
 //admin
+router.post('/rumus/editbyAdmin/:id', rm.EditRumusByAdmin)
+router.post('/user/editbyAdmin/:id',multer.single("img_profile"), user.UpdateUserByAdmin)
+
+
 //pengelola
 
 

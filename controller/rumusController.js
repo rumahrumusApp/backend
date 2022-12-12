@@ -1,4 +1,4 @@
-const { rumus, sequelize } = require("../models");
+const { rumus,category, sub_category,users,status, sequelize } = require("../models");
 // const path = require("fs");
 const { Op } = require("sequelize");
 const fs = require("fs");
@@ -21,7 +21,8 @@ module.exports = class {
                 'status',
                 
 
-           ],});
+           ], where:{status_id: 4}});
+           
             res.status(200).json({
                 status:200,
                 data: result,
@@ -33,8 +34,62 @@ module.exports = class {
         }
     }
 
+
+
+    static async getRumusAll(req, res){
+        try{
+            const result = await rumus.findAll({ 
+                include: [
+                
+                'contributor',
+                'status',
+                
+
+           ]});
+           
+            res.status(200).json({
+                status:200,
+                data: result,
+            });
+
+        } catch(err){
+            console.log(err);
+            res.send(err);
+        }
+    }
+
+
+    static async getRumusByUser(req, res){
+        try{
+            const result = await rumus.findAll({ 
+                include: [
+                    { model: status, attributes: ['name'], as: 'status' },
+                    { model: users, attributes: ['username'], as: 'contributor' }
+                ], where:{contributor_id: req.params.id}});
+
+           if (result.length == 0) {
+                res.send({
+                    status:404,
+                    message: "Rumus NotFound",
+                }); 
+
+           }else{
+           
+                res.status(200).json({
+                    status:200,
+                    data: result,
+                });
+        }
+
+        } catch(err){
+            console.log(err);
+            res.send(err);
+        }
+
+    }
+
     static async getRumusByCateg(req, res){
-        const checkRumus = await rumus.findOne({where: {category_id: req.params.category_id}})
+        const checkRumus = await rumus.findOne({where: {category_id: req.params.category_id, status_id: 4}})
 
         if (!checkRumus){
             res.status(400).send({
@@ -62,7 +117,7 @@ module.exports = class {
     }
 
     static async getRumusBySub(req, res){
-        const checkRumus = await rumus.findAll({where: {sub_category_id: req.params.id}})
+        const checkRumus = await rumus.findAll({where: {sub_category_id: req.params.id, status_id: 4}})
 
         if (!checkRumus){
             res.status(400).send({
@@ -114,7 +169,7 @@ module.exports = class {
                 res.status(200).json({
                     status: 200,
                     data: result,
-                });2
+                });
 
             } catch(err){
                 console.log(err);
@@ -126,39 +181,71 @@ module.exports = class {
 
 
 
-    static async getRumusbyReviewer(req, res){
-        const checkRumus = await rumus.findOne({where: {contributor_id: req.params.id}})
+    static async getRumusSubmissions(req, res){
 
-        if (!checkRumus){
-            res.status(400).send({
-                status:400,
-                message: "Rumus tidak ditemukan!",
+        try{
+                const checkRumus = await rumus.findAll({
 
-            });
-            
-        } else {
-            try {
-                const result = await rumus.findAll({
                     include: [
-                       
-                        'contributor'
-                     
-     
-                   ],
-                    where: {contributor_id: req.params.id},
-                });
-                res.status(200).json({
-                    status: 200,
-                    data:result,
-                });
+                        'contributor',
+                        'status',
+                    ], where: {status_id: 2} })
 
-            } catch(err){
+                if (!checkRumus){
+                    res.status(400).send({
+                        status:400,
+                        message: "Rumus tidak ditemukan!",
+
+                    });
+                    
+                } else {
+                        res.status(200).json({
+                            status: 200,
+                            data: checkRumus,
+                        });
+
+                }
+
+         } catch(err){
                 console.log(err);
-                res.send(err);
-            }
-        }
+                res.send(err);        
+         }
+ }
 
-    }
+
+ static async getRumusSubmissionsById(req, res){
+
+    try{
+            const checkRumus = await rumus.findOne({where: {id: req.params.id, status_id: 2},
+                include: [
+                    { model: category, attributes: ['name'], as: 'category' },
+                    { model: sub_category, attributes: ['name'], as: 'subcategory' },
+                    { model: users, attributes: ['username'], as: 'contributor' }
+                ] })
+
+
+            if (!checkRumus){
+                res.status(400).send({
+                    status:400,
+                    message: "Rumus tidak ditemukan!",
+
+                });
+                
+            } else {
+                    res.status(200).json({
+                        status: 200,
+                        data: checkRumus,
+                    });
+
+            }
+
+     } catch(err){
+            console.log(err);
+            res.send(err);        
+     }
+     
+}
+
 
 
     static async getRumusByKeyword(req, res) {
@@ -169,13 +256,14 @@ module.exports = class {
             const result = await rumus.findAll({
         
                 where: {
-                    title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + lookupValue + '%')
+                    title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + lookupValue + '%'),
+                    status_id: 4
                 }
             })
 
             if (result.length == 0) {
-                res.status(404).send({
-                    status: 400,
+                res.send({
+                    status: 404,
                     message: 'Data not exist!'
                 })
             }
@@ -323,6 +411,133 @@ module.exports = class {
                         img_ilustrasi: imgUpload[0],
                         img_rumus: imgUpload[1],
                         img_contoh: imgUpload[2],
+                        // reviewer_id: reviewer_id,
+                        contributor_id: contributor_id,
+                        catatan: catatan,
+                        // komentar: komentar,
+                        status_id : status_id,
+                }, { where: { id: req.params.id }});
+
+                // let img_ilust = [];
+                // let img_rum = [];
+                // let img_cont = [];
+                // let fileBase64 =[];
+                // const file = [];
+
+                // const del = req.params.id;
+
+                // const PicDel = await rumus.findOne( {where: {id: del}})
+
+
+
+                // let cloudIlust = [checkData.img_ilustrasi, checkData.img_rumus, checkData.img_contoh];
+
+                // cloudIlust[0] = cloudIlust[0]?.substring(62, 82);
+                // cloudIlust[1] = cloudIlust[1]?.substring(62, 82);
+                // cloudIlust[2] = cloudIlust[2]?.substring(62, 82);
+                
+                // for (let i = 0; i <= 2; i++) {
+                //     cloudyDelete(cloudIlust[i])
+                // }
+                        
+
+
+
+                        //     const rumusEdit = await rumus.update({
+                        //         title: title,
+                        //         kategori: kategori,
+                        //         subkategori: subkategori,
+                        //         reviewer_id: reviewer_id,
+                        //         img_ilustrasi: img_ilustrasi,
+                        //         img_rumus: img_rumus,
+                        //         img_contoh: img_contoh,
+                        //         contributor_id: contributor_id,
+                        //         catatan: catatan,
+                        //         komentar: komentar,
+                        //         status_id : status_id 
+                        //     },
+                        //          { where: { 
+                        //             id: req.params.id
+                        //      }}
+                        // ); 
+                        
+                             
+                        
+              
+
+
+
+                            // for (var i = 0; i<=2; i++) {
+                            //     fileBase64.push(req.files[i].buffer.toString("base64"));
+                            //     file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                            //     const result = await cloudyUpload(file[i]);
+                            //     img_ilust.push(result.secure_url);
+                            //     img_rum.push(result.secure_url);
+                            //     img_cont.push(result.secure_url);
+
+                            //     await rumus.create({
+                            //         img_ilustrasi: img_ilust[0],
+                            //         img_rumus : img_rum[1],
+                            //         img_contoh: img_cont[2],
+                            //         }, { where: { id: checkData.id }});
+                               
+                            // } 
+
+                        
+                            
+                            // const respone = await rumus.findByPk(rumusEdit.id)
+
+                            res.status(201).json({
+                              message: "Rumus Updated!",
+                             data: rumusUpdate
+                            });
+
+
+                    } catch(err){
+                        console.log(err);
+                        res.send(err);
+                    }
+
+         }
+    
+
+    }
+
+
+    static async EditRumusByAdmin(req, res){
+
+        const {title, category_id, sub_category_id, reviewer_id,img_ilustrasi, img_rumus, img_contoh,contributor_id, catatan, komentar,status_id } = req.body;
+        // const {title, kategori, subkategori, reviewer_id,contributor_id, catatan, komentar,status_id } = req.body;
+        const checkData = await rumus.findOne({ where: {id: req.params.id} });
+
+        if(!checkData){
+            res.status(400).send({
+                status: 400,
+                message: "Rumus NotFound",
+            });
+        } else {
+            
+
+            try{
+
+                let imgUpload = [];
+                let fileBase64 =[];
+                const file = [];
+    
+                   for (var i = 0; i< req.files.length; i++) {
+                    fileBase64.push(req.files[i].buffer.toString("base64"));
+                    file.push(`data:${req.files[i].mimetype};base64,${fileBase64[i]}`);
+                    const result = await cloudyUpload(file[i]);
+                    imgUpload.push(result.secure_url);
+                   }
+    
+                    const rumusUpdate = await rumus.update({
+                        title: title,
+                        category_id: category_id,
+                        sub_category_id: sub_category_id,
+                        img_ilustrasi: imgUpload[0],
+                        img_rumus: imgUpload[1],
+                        img_contoh: imgUpload[2],
                         reviewer_id: reviewer_id,
                         contributor_id: contributor_id,
                         catatan: catatan,
@@ -418,7 +633,7 @@ module.exports = class {
 
     static async ReviewRumus(req, res){
 
-        // const {reviewer_id,komentar,status_id } = req.body;
+        const {reviewer_id,komentar,status_id } = req.body;
         // const {title, kategori, subkategori, reviewer_id,contributor_id, catatan, komentar,status_id } = req.body;
         const checkData = await rumus.findOne({ where: {id: req.params.id} });
 
@@ -432,20 +647,18 @@ module.exports = class {
             
 
             try{
-
-    
-                    const rumusUpdate = await rumus.update({
+                   const result= await rumus.update({
                         reviewer_id: req.body.reviewer_id,
                         komentar: req.body.komentar,
-                        status_id : req.body.status_id,
+                        status_id :req.body.status_id,
 
                 }, {where: { id: req.params.id }});
 
 
-                            res.status(201).json({
-                              message: "Review Succes!",
-                             data: checkData
-                            });
+                res.status(201).json({
+                    message: "Review Succes!",
+                     data: result
+                    });
 
 
                     } catch(err){

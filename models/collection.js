@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "rumus_id",
         as: 'rumus'
       });
+
+      collection.belongsTo(models.users, {
+        foreignKey: "user_id",
+        as: 'users'
+      });
     }
   }
   collection.init({

@@ -4,6 +4,7 @@ const path = require("path");
 const jwt = require("../helper/jwt");
 const cloudinary = require("../utils/cloudinary");
 const { promisify } = require("util");
+const { where } = require("sequelize");
 const cloudyUpload = promisify(cloudinary.uploader.upload);
 const cloudyDelete = promisify(cloudinary.uploader.destroy);
 
@@ -14,7 +15,15 @@ const cloudyDelete = promisify(cloudinary.uploader.destroy);
 module.exports = class {
     static async getUsers(req, res) {
         try {
-            const result = await users.findAll();
+            const result = await users.findAll({
+                include: [
+                       
+                    'roles',
+                    'occupation',
+                 
+    
+               ]
+            });
             res.status(200).json({
                 status:200,
                 data: result,
@@ -72,7 +81,7 @@ module.exports = class {
             });
         } else {
             try {
-                const result = await users.findAll({
+                const result = await users.findOne({
                     where: {id: req.params.id},
                 });
                 res.status(200).json({
@@ -194,50 +203,100 @@ module.exports = class {
             });
 
         }else {
-                
                 try{
 
-                    // console.log(checkUsers)
+                    if (req.body.img_profile !== checkUsers.img_profile){
 
-                    //  let oldimages = checkUsers.img_profile
-                    //  let image = req.file.path
-                     const uploadImage = await cloudyUpload(req.file.path);
-                    //  img_profile = uploadImage.secure_url
-
-                    //  if (oldimages == null){
-                            
+                           const uploadImage = await cloudyUpload(req.file.path); 
                            const UpdateUser = await users.update(
                                 {
                                     username: req.body.username,
                                     fullname: req.body.fullname,
-                                    role: req.body.role,
                                     img_profile: uploadImage.secure_url,
                                     occupation_id: req.body.occupation_id,
                                     institusi_name: req.body.institusi_name
 
-                                },
-                                {where: {id: req.params.id}}
+                                 } , {where: {id: req.params.id}}
                             );
 
-                        
+                    }else {
+                         
+                        const UpdateUser = await users.update(
+                            {
+                                username: req.body.username,
+                                fullname: req.body.fullname,
+                                img_profile: checkUsers.img_profile,
+                                occupation_id: req.body.occupation_id,
+                                institusi_name: req.body.institusi_name
 
-                        // } else {
+                             } , {where: {id: req.params.id}}
+                        );
+                    }
+                    res.status(201).json({
+                        status: 201,
+                        // data: result,
+                        // message: 'Bisa gais',
+                        data: checkUsers
+                    });
 
-                        //     // const uploadImage = await cloudyUpload(req.file.path);
-                        //     await users.update(
-                        //         {
-                        //             username: username,
-                        //             fullname: fullname,
-                        //             // role: req.body.role,
-                        //             img_profile: img_profile,
-                        //             occupation_id: occupation_id,
-                        //             institusi_name: institusi_name
+                } catch (err){
+                    console.log(err);
+                    res.send(err);
+                }
 
-                        //         },
-                        //         {where: {id: req.params.id}}
-                        //     );
+        }
+    }
 
-                        // }
+
+    static async UpdateUserByAdmin(req, res){
+        // const storage = multer.diskStorage
+        // const {username, fullname, img_profile, occupation_id, institusi_name } = req.body;
+        // console.log("\n TEST:", req.body.img_profile, '\n')
+        const checkUsers = await users.findOne({ where: {id: req.params.id} });
+       
+
+        if(!checkUsers){
+            res.status(400).send({
+                status: 400,
+                message: "User Not Found",
+            });
+
+        }else {
+                
+                try{
+
+                    if (req.body.img_profile !== checkUsers.img_profile){
+
+                        const uploadImage = await cloudyUpload(req.file.path); 
+                        const EditUser = await users.update(
+                             {
+                                username: req.body.username,
+                                fullname: req.body.fullname,
+                                img_profile: uploadImage.secure_url,
+                                role: req.body.role,
+                                email: req.body.email,
+                                occupation_id: req.body.occupation_id,
+                                institusi_name: req.body.institusi_name
+
+                              } , {where: {id: req.params.id}}
+                         );
+
+                 }else {
+                      
+                     const EditUser = await users.update(
+                         {
+                            username: req.body.username,
+                            fullname: req.body.fullname,
+                            img_profile: checkUsers.img_profile,
+                            role: req.body.role,
+                            email: req.body.email,
+                            occupation_id: req.body.occupation_id,
+                            institusi_name: req.body.institusi_name
+
+                          } , {where: {id: req.params.id}}
+                     );
+                 }
+
 
                     res.status(201).json({
                         status: 201,

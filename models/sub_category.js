@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      sub_category.belongsTo(models.category, {
+        foreignKey: "category_id",
+        as: 'category' 
+      });
     }
   }
   sub_category.init({
