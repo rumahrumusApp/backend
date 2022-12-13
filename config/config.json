@@ -3,7 +3,7 @@
       "username": "areumare",
       "password": "12345678",
       "database": "dbrumahrumusapp",
-      "host": "http://dbrumahrumusapp.cc5iothafhpn.ap-northeast-1.rds.amazonaws.com/",
+      "host": "",
       "dialect": "postgres"
     },
     "test": {
