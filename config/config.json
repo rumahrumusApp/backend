@@ -1,9 +1,8 @@
 {
     "development": {
-      "username": "areumare",
-      "password": "12345678",
-      "database": "dbrumahrumusapp",
-      "host": "",
+      "username": "ubuntu",
+      "password": "123456",
+      "database": "db_rumahrumusapp",
       "dialect": "postgres"
     },
     "test": {
