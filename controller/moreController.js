@@ -194,11 +194,11 @@ static async getSubCategByCategId(req, res){
     } else {
             try {
 
-                // const result = await sub_category.findAll({where: {category_id: req.params.category_id} });
+                const result = await sub_category.findAll({where: {category_id: req.params.id} });
                 res.send({
                     status:200,
                     message:`Sub categories with category id ${req.params.id}`,
-                    data:checkSub ,
+                    data:result ,
                 });
                 
             }  catch (err) {
