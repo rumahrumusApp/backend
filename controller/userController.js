@@ -206,7 +206,8 @@ module.exports = class {
                 try{
 
                     if (req.body.img_profile !== checkUsers.img_profile){
-
+                        
+                           
                            const uploadImage = await cloudyUpload(req.file.path); 
                            const UpdateUser = await users.update(
                                 {
