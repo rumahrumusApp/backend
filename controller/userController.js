@@ -1,13 +1,12 @@
 const { users, role } = require("../models");
 const bcrypt = require("bcrypt");
 const path = require("path");
-const jwt = require("../helper/jwt");
 const cloudinary = require("../utils/cloudinary");
 const { promisify } = require("util");
 const { where } = require("sequelize");
 const cloudyUpload = promisify(cloudinary.uploader.upload);
 const cloudyDelete = promisify(cloudinary.uploader.destroy);
-
+const jwt = require("jsonwebtoken");
 // const multer = require('multer')
 // const path = require('path')
 // import multer from 'multer'
@@ -37,7 +36,7 @@ module.exports = class {
 
     static async getUserProfile(req, res) {
         
-        const checkUsers = await users.findOne({where: { id: req.params.id} });
+        const checkUsers = await users.findOne({where: { id: req.iduser} });
 
         if (!checkUsers){
             res.status(400).send({
@@ -55,7 +54,7 @@ module.exports = class {
                         'occupation',
                      
         
-                   ], where: {id: req.params.id},});
+                   ], where: {id: req.iduser},});
 
                 res.status(200).json({
                     status: 200,
@@ -154,46 +153,55 @@ module.exports = class {
                 });
             }
             
-            const isValidPassword = await bcrypt.compare(
+            else {
+                
+                const isValidPassword = await bcrypt.compare(
                 req.body.password,
                 user.password
             );
 
-            if (!isValidPassword){
-                res.status(404).send({
-                    status: 400,
-                    message: "username and password not match",
+                    if (!isValidPassword){
+                        res.status(404).send({
+                        status: 400,
+                        message: "username and password not match",
+                    });
+                }
+
+                    else {
+                        const token = jwt.sign ({
+                        userid: user.id,
+                        username: user.username,
+                        roleuser: user.role,
+                        pictprofile: user.img_profile
+
+                    }, process.env.SECRET_TOKEN_KEY)
+
+                res.header('token', token)
+                res.status(200).send({
+                    status: 200,
+                    message:"Login Berhasil",
+                    token
+                    // data: {
+                    //     UserSecure,
+                    //     token: token,
+                    // },
                 });
             }
 
-            // const token = jwt.generateToken({
-            //     username: user.username,
-            //     password: user.password,
-            // });
+        }
 
-            // const UserSecure = user.UserValues;
-            // delete UserSecure.password;
-            // res.header("token", token);
-            res.status(200).send({
-                status: 200,
-                message:"Login Berhasil",
-                data: user
-                // data: {
-                //     UserSecure,
-                //     token: token,
-                // },
-            });
-
-        }catch(error){
+        
+        } catch(error){
             res.status(400).send(error);
         }
+   
     }
 
 
     static async UpdateUser(req, res){
         // const storage = multer.diskStorage
         const { username, fullname, img_profile, occupation_id, institusi_name } = req.body;
-        const checkUsers = await users.findOne({ where: {id: req.params.id} });
+        const checkUsers = await users.findOne({ where: {id: req.iduser} });
        
 
         if(!checkUsers){
@@ -217,7 +225,7 @@ module.exports = class {
                                     occupation_id: req.body.occupation_id,
                                     institusi_name: req.body.institusi_name
 
-                                 } , {where: {id: req.params.id}}
+                                 } , {where: {id: req.iduser}}
                             );
 
                     }else {
@@ -230,7 +238,7 @@ module.exports = class {
                                 occupation_id: req.body.occupation_id,
                                 institusi_name: req.body.institusi_name
 
-                             } , {where: {id: req.params.id}}
+                             } , {where: {id: req.iduser}}
                         );
                     }
                     res.status(201).json({
@@ -316,7 +324,7 @@ module.exports = class {
 
 
     static async ChangePassword(req, res){
-        const checkUsers = await users.findOne({ where: {id: req.params.id} });
+        const checkUsers = await users.findOne({ where: {id: req.iduser} });
         // const {oldPass, confPass} = req.body;
 
         if(!checkUsers){
@@ -347,7 +355,7 @@ module.exports = class {
 
                             const respone = await users.update({
                                 password: hashPassword
-                            }, {where: {id: req.params.id} })
+                            }, {where: {id: req.iduser} })
 
                             res.status(201).send({
                                 message: "Password has ben changed!"

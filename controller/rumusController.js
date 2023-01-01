@@ -65,7 +65,7 @@ module.exports = class {
                 include: [
                     { model: status, attributes: ['name'], as: 'status' },
                     { model: users, attributes: ['username'], as: 'contributor' }
-                ], where:{contributor_id: req.params.id}});
+                ], where:{contributor_id: req.iduser}});
 
            if (result.length == 0) {
                 res.send({

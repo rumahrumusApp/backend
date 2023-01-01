@@ -1,6 +1,6 @@
 {
     "development": {
-      "username": "ubuntu",
+      "username": "admin",
       "password": "123456",
       "database": "db_rumahrumusapp",
       "dialect": "postgres"
