@@ -64,9 +64,9 @@ router.get('/rumus/allrumus', a.verify_reviewer, rm.getRumusAll)
 
 
 //rumus
-router.post('/rumus/editRumus/:id', a.verify_iduser, uploadOnMemory.any(["img_ilustrasi", "img_rumus", "img_contoh"]) ,rm.EditRumus)
-router.post('/rumus/addRumus', a.verify_iduser,uploadOnMemory.any(["img_ilustrasi", "img_rumus", "img_contoh"]), rm.AddRumus)
-router.delete('/rumus/delRumus/:id', a.verify_iduser, rm.DelRumus)
+router.post('/rumus/editRumus/:id', uploadOnMemory.any(["img_ilustrasi", "img_rumus", "img_contoh"]) ,rm.EditRumus)
+router.post('/rumus/addRumus', uploadOnMemory.any(["img_ilustrasi", "img_rumus", "img_contoh"]), rm.AddRumus)
+router.delete('/rumus/delRumus/:id', rm.DelRumus)
 
 //kategori
 router.get('/ct/allCateg', api.getCategory)
