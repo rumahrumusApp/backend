@@ -101,7 +101,7 @@ module.exports = class {
         } else {
             try {
                 const result = await rumus.findAll({
-                    where: {category_id: req.params.category_id},
+                    where: {category_id: req.params.category_id, status_id: 4},
                 });
                 res.status(200).json({
                     status: 200,
