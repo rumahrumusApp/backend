@@ -108,7 +108,7 @@ router.delete('/status/delStatus/:id', a.verify_admin, api.DelStatus)
 
 //collection
 router.get('/collect/allCollect', api.getCollect)
-router.get('/collect/collectById',a.verify_iduser, api.getCollectById)
+router.get('/collect/collectById/:user_id',a.verify_iduser, api.getCollectById)
 router.post('/collect/addCollect',  api.AddCollect)
 router.delete('/collect/delCollect/:id', api.DelCollect)
 

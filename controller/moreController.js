@@ -700,11 +700,11 @@ static async DelRole(req, res){
     }
 
     static async getCollectById(req, res){
-        const checkCollect = await collection.findOne({where: {user_id: req.iduser} });
+        const checkCollect = await collection.findOne({where: {user_id: req.params.id} });
 
         if (!checkCollect){
             res.status(400).send({
-                status:404,
+                status:400,
                 message: "Collect NotFound",
             });
 
@@ -717,7 +717,7 @@ static async DelRole(req, res){
                           'rumus'
                        
        
-                     ], },{where: {user_id: req.iduser} });
+                     ], },{where: {user_id: req.params.id} });
                     res.status(200).json({
                         status:200,
                         data:result,
