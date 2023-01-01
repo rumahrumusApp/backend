@@ -66,7 +66,7 @@ module.exports = class{
 
         try {
             const verify = jwt.verify(token, process.env.SECRET_TOKEN_KEY)
-            if (verify.roleuser == 2) {
+            if (verify.roleuser != 1) {
                 req.iduser = verify.userid
                 next()
             }

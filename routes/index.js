@@ -54,7 +54,7 @@ router.post('/rumus/editbyAdmin/:id', a.verify_admin, rm.EditRumusByAdmin)
 router.post('/user/editbyAdmin/:id',a.verify_admin, multer.single("img_profile"), user.UpdateUserByAdmin)
 
 //reviewer 
-router.post('/rumus/review/:id',a.verify_reviewer, rm.ReviewRumus)
+router.post('/rumus/:id/review',a.verify_reviewer, rm.ReviewRumus)
 
 
 //reviewer&admin
